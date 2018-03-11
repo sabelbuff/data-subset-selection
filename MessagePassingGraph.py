@@ -39,13 +39,13 @@ class MessageGraph(object):
                 f.message()
                 f.sendMsg()
 
-            print("factors msg sent")
+            # print("factors msg sent")
 
             for v in self.variables:
                 v.message()
                 v.sendMsg()
 
-            print("variable msg sent")
+            # print("variable msg sent")
 
             flag = True
 
