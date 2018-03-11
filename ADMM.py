@@ -17,7 +17,6 @@ class ADMM(object):
         cs = np.divide(np.cumsum(np.absolute(z[0:len(z) - 1])), (np.arange(1, len(z))).T) - \
              np.divide(t, np.arange(1, len(z)))
         d = np.greater(cs, np.absolute(z[1:len(z)])).astype(int)
-
         if np.sum(d, axis=0) == 0:
             cut_index = len(y)
         else:
@@ -37,15 +36,12 @@ class ADMM(object):
 
         if len(l) > 0:
             [D, N] = np.shape(C1)
-            print(D)
+
             if p == 1:
                 C2 = np.multiply(np.maximum(np.absolute(C1) - matlib.repmat(l, 1, N), 0), np.sign(C1))
 
             elif p == 2:
-                # print(l.shape)
-                # print(np.sqrt(np.sum(np.power(C1, 2), axis=1)).shape)
                 r = np.maximum(np.sqrt(np.sum(np.power(C1, 2), axis=1, keepdims=True)) - l, 0)
-                print(r.shape)
                 C2 = np.multiply(matlib.repmat(np.divide(r, (r + l)), 1, N), C1)
 
             elif p == np.inf:
@@ -69,11 +65,11 @@ class ADMM(object):
             temp[temp <= 0] = 0
             temp[temp > 0] = 1
             idx = 1 - temp
-
             s = [k for k, t in enumerate(idx) if t > 0]
 
             if s:
                 theta[activeSet[s]] = (np.sum(V[0:i, activeSet[s]], axis=0) - 1) / (j - 1)
+
             activeSet = np.delete(activeSet, s)
             i = i + 1
 
@@ -92,6 +88,7 @@ class ADMM(object):
         return err
 
     def runADMM(self, D, p):
+        np.set_printoptions(threshold=np.nan)
         [Nr, Nc] = np.shape(D)
         k = 1
         idx = np.argmin(np.sum(D, axis=1))
@@ -99,17 +96,14 @@ class ADMM(object):
         C1[idx, :] = 1
         Lambda = np.zeros((Nr, Nc))
         CFD = np.ones((Nr, 1))
-        # p = np.inf
 
         while True:
-            print("iteration : ", k)
-
-            Z = self.optimizer1(np.divide(C1 - (Lambda + D), self.mu), (self.reg / self.mu) * CFD, p)
-            C2 = self.optimizer2(np.divide(Z + Lambda, self.mu))
-            np.set_printoptions(threshold=np.nan)
-
+            if k % 100 == 0:
+                print("iteration : ", k)
+            Z = self.optimizer1(C1 - np.divide((Lambda + D), self.mu), (self.reg / self.mu) * CFD, p)
+            b = Z
+            C2 = self.optimizer2(Z + np.divide(Lambda, self.mu))
             Lambda = Lambda + np.multiply(self.mu, (Z - C2))
-
             err1 = self.errorCoef(Z, C2)
             err2 = self.errorCoef(C1, C2)
 
@@ -122,7 +116,7 @@ class ADMM(object):
 
         Z = C2
 
-        return Z
+        return Z, b
 
 
 
