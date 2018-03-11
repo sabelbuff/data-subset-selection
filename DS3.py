@@ -18,9 +18,10 @@ class DS3(object):
         else:
             for i in range(len(self.dis_matrix)):
                 norm = LA.norm(z[i], ord=p)
-                if norm > 0:
+                if norm > 0.1:
                     temp_sum1 += 1
         temp_sum2 = 0
+
         for i in range(len(self.dis_matrix)):
             for j in range(len(self.dis_matrix)):
                 temp_sum2 += self.dis_matrix[i, j] * z[i, j]
@@ -57,7 +58,7 @@ class DS3(object):
         np.set_printoptions(threshold=np.nan)
         G.setVarValue()
         z_matrix = G.repmatrix
-
+        # print(z_matrix)
         function_value = self.functionValue(z_matrix.T, None, 0)
 
         data_rep = []
@@ -95,18 +96,19 @@ class DS3(object):
 
     def ADMM(self, mu, epsilon, max_iter, p):
         G = ADMM(mu, epsilon, max_iter, self.reg)
-        z_matrix = G.runADMM(self.dis_matrix, p)
+        z_matrix, b = G.runADMM(self.dis_matrix, p)
+        # print(z_matrix)
         function_value = self.functionValue(z_matrix, p, 1)
         data_rep = []
         count = 0
         for i in range(len(z_matrix)):
             flag = 0
             for j in range(len(z_matrix)):
-                if z_matrix[i, j] == 1:
+                if z_matrix[i, j] > 0.1:
                     flag = 1
                     count += 1
             if flag == 1:
                 data_rep.append(i)
 
-        return data_rep, len(data_rep), function_value
+        return data_rep, len(data_rep), function_value, b
 
