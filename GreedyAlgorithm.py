@@ -88,13 +88,14 @@ class Greedy(object):
 
             a_dash = max(0, a)
             b_dash = max(0, b)
-
+            print(a_dash, b_dash)
             values = [1, 0]
 
             if a_dash == 0 and b_dash == 0:
                 Y = temp_Y
 
             else:
+                print("enter")
                 a_prob = a_dash / (a_dash + b_dash)
                 b_prob = 1 - a_prob
                 if np.random.choice(values, p=[a_prob, b_prob]):
@@ -102,6 +103,8 @@ class Greedy(object):
 
                 else:
                     X = temp_X
+            print("X:", X)
+            print("Y:", Y)
         function_value = self.evaluating_function(X)
 
         return X, function_value
