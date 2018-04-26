@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import matlib
+# import time
 
 
 class ADMM(object):
@@ -11,6 +12,7 @@ class ADMM(object):
 
     @staticmethod
     def solveLinfshrink(y, t):
+        # print(y, t)
         x = np.array(y, dtype=np.float32)
         o = np.argsort(-np.absolute(y))
         z = y[o]
@@ -20,7 +22,7 @@ class ADMM(object):
         if np.sum(d, axis=0) == 0:
             cut_index = len(y)
         else:
-            cut_index = min(np.where(d == 1)[0]) + 1
+            cut_index = np.min(np.where(d == 1)[0]) + 1
 
         zbar = np.mean(np.absolute(z[0:cut_index]), axis=0)
 
@@ -32,23 +34,17 @@ class ADMM(object):
         return x
 
     def optimizer1(self, C1, l, p):
-        C2 = []
-
         if len(l) > 0:
             [D, N] = np.shape(C1)
 
-            if p == 1:
-                C2 = np.multiply(np.maximum(np.absolute(C1) - matlib.repmat(l, 1, N), 0), np.sign(C1))
+            if p == np.inf:
+                C2 = np.zeros((D, N), dtype=np.float32)
+                for i in range(D):
+                    C2[i, :] = self.solveLinfshrink(C1[i, :].T, l[i]).T
 
             elif p == 2:
                 r = np.maximum(np.sqrt(np.sum(np.power(C1, 2), axis=1, keepdims=True)) - l, 0)
                 C2 = np.multiply(matlib.repmat(np.divide(r, (r + l)), 1, N), C1)
-
-            elif p == np.inf:
-                C2 = np.zeros((D, N), dtype=np.float32)
-
-                for i in range(D):
-                    C2[i, :] = self.solveLinfshrink(C1[i, :].T, l[i]).T
 
         return C2
 
@@ -61,13 +57,10 @@ class ADMM(object):
         i = 0
         while len(activeSet) > 0 and i < m:
             j = i + 1
-            temp = V[i, activeSet] - ((np.sum(V[0:j, activeSet], axis=0) - 1) / j)
-            temp[temp <= 0] = 0
-            temp[temp > 0] = 1
-            idx = 1 - temp
-            s = [k for k, t in enumerate(idx) if t > 0]
+            idx = np.where((V[i, activeSet] - ((np.sum(V[0:j, activeSet], axis=0) - 1) / j)) <= 0, 1, 0)
+            s = np.where(idx == 1)[0]
 
-            if s:
+            if len(s):
                 theta[activeSet[s]] = (np.sum(V[0:i, activeSet[s]], axis=0) - 1) / (j - 1)
 
             activeSet = np.delete(activeSet, s)
@@ -106,7 +99,6 @@ class ADMM(object):
             Lambda = Lambda + np.multiply(self.mu, (Z - C2))
             err1 = self.errorCoef(Z, C2)
             err2 = self.errorCoef(C1, C2)
-
             if k >= self.max_iter or (err1 <= self.epsilon and err2 <= self.epsilon):
                 break
             else:
@@ -117,6 +109,3 @@ class ADMM(object):
         Z = C2
 
         return Z, b
-
-
-
