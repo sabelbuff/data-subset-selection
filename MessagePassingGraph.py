@@ -1,5 +1,6 @@
 from Node import Variable, Factor
 import numpy as np
+import time
 
 
 class MessageGraph(object):
@@ -17,7 +18,6 @@ class MessageGraph(object):
 
     def addVarNode(self, nid, i, j):
         new_var = Variable('X', nid, i, j, self.damp)
-        # name = ""
         self.variables.append(new_var)
         self.var_count += 1
 
@@ -34,18 +34,13 @@ class MessageGraph(object):
 
             print("Iteration : ", (temp - iterations + 1))
             iterations -= 1
-
             for f in self.factors:
                 f.message()
                 f.sendMsg()
 
-            # print("factors msg sent")
-
             for v in self.variables:
                 v.message()
                 v.sendMsg()
-
-            # print("variable msg sent")
 
             flag = True
 
@@ -81,6 +76,3 @@ class MessageGraph(object):
                 self.repmatrix[v.i_index, v.j_index] = 1
             else:
                 self.repmatrix[v.i_index, v.j_index] = 0
-
-
-

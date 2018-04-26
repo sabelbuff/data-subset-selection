@@ -31,7 +31,6 @@ class Node(object):
         node.in_msgs.append(0)
         node.out_msgs.append(0)
         node.prev_out_msgs.append(0)
-        # print("'fdjndf")
 
     def receiveMsg(self, sender, msg):
         index = self.neighbors.index(sender)
@@ -79,42 +78,24 @@ class Factor(Node):
         prev_out_msg = self.out_msgs[:]
         self.prev_out_msgs = prev_out_msg
         if self.nodetype == 'IJ':
-            for i in range(len(self.neighbors)):
-                sigma = self.dismatrix[self.neighbors[i].i_index, self.neighbors[i].j_index]
-                self.out_msgs[i] = (self.damp * self.prev_out_msgs[i]) + ((1 - self.damp) * -sigma)
+            sigma = self.dismatrix[self.neighbors[0].i_index, self.neighbors[0].j_index]
+            self.out_msgs[0] = (self.damp * self.prev_out_msgs[0]) + ((1 - self.damp) * -sigma)
 
         elif self.nodetype == 'IC':
+            i = self.neighbors[0].i_index
+            eta = [self.neighbors[k].in_msgs[2] - self.dismatrix[i, k] for k in range(len(self.neighbors))]
             for j in range(len(self.neighbors)):
-                # max_value = 0
-                eta = []
-                i = self.neighbors[j].i_index
-                for k in range(self.N):
-                    # index = 2
-                    if not k == j:
-                        # for n in range(len(self.neighbors[k].neighbors)):
-                        #     if self.neighbors[k].neighbors[n].nodetype == 'FJ':
-                        #         index = n
-                        alpha = self.neighbors[k].in_msgs[2]
-                        eta.append(alpha - self.dismatrix[i, k])
-                        # if max_value < (alpha - self.dismatrix[i, k]):
-                        #     max_value = alpha - self.dismatrix[i, k]
-                # print(eta)
-                # print(max(eta))
-                self.out_msgs[j] = (self.damp * self.prev_out_msgs[j]) + ((1 - self.damp) * -max(eta))
+                temp_eta = eta[:]
+                del temp_eta[j]
+                self.out_msgs[j] = (self.damp * self.prev_out_msgs[j]) + ((1 - self.damp) * -max(temp_eta))
 
         else:
+            j = self.neighbors[0].j_index
+            dis_eta = [self.neighbors[k].in_msgs[1] - self.dismatrix[k, j] for k in range(len(self.neighbors))]
+            dis_eta = np.array(dis_eta)
             for i in range(len(self.neighbors)):
-                sum_value = 0
-                j = self.neighbors[i].j_index
-                for k in range(self.N):
-                    # index = 1
-                    if not k == i:
-                        # for n in range(len(self.neighbors[k].neighbors)):
-                        #     if self.neighbors[k].neighbors[n].nodetype == 'IC':
-                        #         index = n
-                        eta = self.neighbors[k].in_msgs[1]
-                        sum_value += max(0, eta - self.dismatrix[k, j])
-                alpha = min(0, (-self.reg + sum_value))
+                temp_dis_eta = dis_eta[:]
+                np.delete(temp_dis_eta, i, 0)
+                sum_value = np.sum(np.maximum(temp_dis_eta, 0))
+                alpha = np.minimum(0, (-self.reg + sum_value))
                 self.out_msgs[i] = (self.damp * self.prev_out_msgs[i]) + ((1 - self.damp) * alpha)
-
-
