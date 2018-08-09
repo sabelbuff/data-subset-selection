@@ -26,9 +26,8 @@ class MessageGraphSeq(object):
         self.variables = np.empty((self.M, self.T), dtype=object)   # matrix to store all variables
         self.repmatrix = np.zeros((self.M, self.T))                 # representative matrix
 
-
-
-    """
+    def addVarNode(self, nid, i, t):
+        """
         This function creates a variable node and adds it to the 'variables' list.
 
         :param nid: node id.
@@ -37,42 +36,38 @@ class MessageGraphSeq(object):
 
         :returns: variable node.
         """
-    def addVarNode(self, nid, i, t):
+
         new_var = Variable('X', nid, i, t, self.damp)
         self.variables[i, t] = new_var
         self.var_count += 1
 
         return new_var
 
-
-
-
-    """
+    def addFacNode(self, nodetype, nid, varnodes):
+        """
         This function creates a factor node and adds it to the 'factors' list.
 
         :param nodetype: type of factor node { 'IJ', 'IC', 'JF'}
         :param nid:      node id.
-        :param varnodes: list of variables nodes its connected to.   
+        :param varnodes: list of variables nodes its connected to.
 
         :returns: None.
         """
-    def addFacNode(self, nodetype, nid, varnodes):
+
         new_fac = Factor(nodetype, nid, varnodes, self.dismatrix, self.trans_matrix, self.init_prob_matrix,
                          self.regvector, self.damp)
         self.factors.append(new_fac)
         self.fac_count += 1
 
-
-
-
-    """
+    def sumMax(self, iterations):
+        """
         This function runs the sum-max message passing algorithm.
 
         :param iterations: number of iterations to run this algorithm.
 
-        :returns: 
+        :returns:
         """
-    def sumMax(self, iterations):
+
         temp = iterations
         while iterations > 0 and not self.converged:
 
@@ -111,10 +106,8 @@ class MessageGraphSeq(object):
         if not self.converged:
             print("sum-max algorithm did not converge, try running for more number of iterations.")
 
-
-
-
-    """
+    def belief(self, var):
+        """
         This function calculates the belief of each variable by adding all te incoming messages from the
         factors its connected to.
 
@@ -122,17 +115,15 @@ class MessageGraphSeq(object):
 
         :returns: variable node.
         """
-    def belief(self, var):
+
         belief = 0
         for i in range(len(var.in_msgs)):
             belief += var.in_msgs[i]
 
         return belief
 
-
-
-
-    """
+    def setVarValue(self):
+        """
         This function sets the value of each element of representative matrix to either 0 or 1, based on the value of
         belief(1, if +ve, else 0) of the corresponding variable in the factor graph.
 
@@ -140,7 +131,7 @@ class MessageGraphSeq(object):
 
         :returns
         """
-    def setVarValue(self):
+
         for v in self.variables:
             for v1 in v:
                 belief = self.belief(v1)

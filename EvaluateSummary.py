@@ -1,20 +1,19 @@
 import numpy as np
 
 
-"""
+def evaluateSummarySuperframe(summary_selection, user_score, super_frame_index):
+    """
     This function evaluates a summary(f-score, precision, recall) for a given subset selection of a video
-    
+
     f_measure is the mean pairwise f-measure used in Gygli et al. ECCV 2014
-    
+
     :param summary_selection:       selected representatives(superframes) of the video.
     :param user_score:              score given by users for representative selection.
-    :param super_frame_index:       indexing of the video by superframes.            
+    :param super_frame_index:       indexing of the video by superframes.
 
-    :returns:                       precision, recall, f-score. 
+    :returns:                       precision, recall, f-score.
     """
 
-
-def evaluateSummarySuperframe(summary_selection, user_score, super_frame_index):
     f_score_beta = 1
     num_frames = super_frame_index[-1]
     num_users = len(user_score)

@@ -2,15 +2,15 @@ import numpy as np
 
 # generic Node class
 class Node(object):
+    """
+    :param node_type:  type of the Node.
+    :param nid:        Node id.
+    :param damp:       message damp value to be used. This helps in faster convergence of the algorithm.
+    """
 
     epsilon = 10 ** (-4)                                # small value to check for the convergence
     VALID_NODES = {'X', 'IT', 'CT', 'IR', 'D'}          # set of Node types
 
-    """
-        :param node_type:  type of the Node.
-        :param nid:        Node id.
-        :param damp:       message damp value to be used. This helps in faster convergence of the algorithm.
-        """
     def __init__(self, node_type, nid, damp):
         # in_msgs, out_msgs, prev_out_msgs lists follow order of sigma, alpha, eta, gamma', gamma.
         self.nodetype = node_type
@@ -23,31 +23,27 @@ class Node(object):
 
         self.validTypes(self.nodetype)
 
-
-
-
-    """
+    @staticmethod
+    def validTypes(arg):
+        """
         This function checks if the Node type is valid one or not.
 
         :param arg: variable to represent a valid node type.
 
         :raise: Invalid Node.
         """
-    @staticmethod
-    def validTypes(arg):
+
         if arg not in Node.VALID_NODES:
             raise ValueError("The Node type must be one of : %r." % Node.VALID_NODES)
 
-
-
-
-    """
+    def addNeighbors(self, node):
+        """
         This function adds the connected node to the neighbors list and adds itself to the node's neighbors list.
         It also initialize the incoming and outgoing messages to 0 for each connected node.
 
         :param node: a variable Node.
         """
-    def addNeighbors(self, node):
+
         self.neighbors.append(node)
         self.in_msgs.append(0)
         self.out_msgs.append(0)
@@ -57,36 +53,30 @@ class Node(object):
         node.out_msgs.append(0)
         node.prev_out_msgs.append(0)
 
-
-
-
-    """
+    def receiveMsg(self, sender, msg):
+        """
         This function receives the message from te sender node and updates te incoming message index corresponding
         to that node.
 
         :param sender: message sender node.
         :param msg:    message to be updated.
         """
-    def receiveMsg(self, sender, msg):
+
         index = self.neighbors.index(sender)
         self.in_msgs[index] = msg
 
-
-
-
-    """
+    def sendMsg(self):
+        """
         This function sends message contained in its outgoing message list to each of its corresponding neigbors.
 
         :param : None
         """
-    def sendMsg(self):
+
         for i in range(len(self.neighbors)):
             self.neighbors[i].receiveMsg(self, self.out_msgs[i])
 
-
-
-
-    """
+    def checkConvergence(self):
+        """
         This function checks the convergence by comparing the difference of the current outgoinf message to the
         previous outgoing message.
 
@@ -94,7 +84,7 @@ class Node(object):
 
         :returns: True, if all outgoing messages are within the epsilon diff to previous messages.
         """
-    def checkConvergence(self):
+
         for i in range(len(self.out_msgs)):
             delta = np.absolute(self.out_msgs[i] - self.prev_out_msgs[i])
             if delta > Node.epsilon:
@@ -106,7 +96,6 @@ class Node(object):
 
 # Variable Node class
 class Variable(Node):
-
     """
     :param nodetype:    type of node.
     :param nid:         Node Id.
@@ -114,22 +103,21 @@ class Variable(Node):
     :param t:           column index of the variable node.
     :param damp:        message damp value to be used. This helps in faster convergence of the algorithm.
     """
+
     def __init__(self, node_type, nid, i, t, damp):
         super(Variable, self).__init__(node_type, nid, damp)
         self.i_index = i
         self.t_index = t
 
-
-
-
-    """
+    def message(self):
+        """
         This function prepares the message from a variable node to all its connected factor nodes and saves to
-        the outgoing message list. It also damps the new message update by the given damping factor and adds it to the 
+        the outgoing message list. It also damps the new message update by the given damping factor and adds it to the
         previous message to get the new outgoing message.
 
         :param : None
         """
-    def message(self):
+
         prev_out_msg = self.out_msgs[:]
         self.prev_out_msgs = prev_out_msg
         for i in range(len(self.in_msgs)):
@@ -142,17 +130,17 @@ class Variable(Node):
 
 # Factor Node class
 class Factor(Node):
-
     """
-        :param nodetype:    type of the node.
-        :param nid:         Node id.
-        :param varnodes:    list of variable nodes connected thhis factor node.
-        :param d:           dis-similarity matrix.
-        :param r:           regularization parameter.
-        :param damp:        message damp value to be used. This helps in faster convergence of the algorithm.
-        :param M:           transition probability matrix for the states in the source set.
-        :param m:           initial probability vector of the states in the source set.
-        """
+    :param nodetype:    type of the node.
+    :param nid:         Node id.
+    :param varnodes:    list of variable nodes connected thhis factor node.
+    :param d:           dis-similarity matrix.
+    :param r:           regularization parameter.
+    :param damp:        message damp value to be used. This helps in faster convergence of the algorithm.
+    :param M:           transition probability matrix for the states in the source set.
+    :param m:           initial probability vector of the states in the source set.
+    """
+
     def __init__(self, nodetype, nid, varnodes, d, M, m, r, damp):
         super(Factor, self).__init__(nodetype, nid, damp)
         self.dis_matrix = d
@@ -168,14 +156,12 @@ class Factor(Node):
         for node in varnodes:
             self.addNeighbors(node)
 
-
-
-
-    """
+    def message(self):
+        """
         This function prepares the message from a factor node to all its connected variable nodes and saves to
-        the outgoing message list. It also damps the new message update by the given damping factor and 
+        the outgoing message list. It also damps the new message update by the given damping factor and
         adds it to the previous message to get the new outgoing message.
-        
+
         To know how sigma, alpha, eta, gamma and gamma' updates work, please read:
         Subset Selection and Summarization in Sequential Data
         by Ehsan Elhamifar, M. Clara De Paolis Kaluza
@@ -183,7 +169,7 @@ class Factor(Node):
 
         :param : None
         """
-    def message(self):
+
         prev_out_msg = self.out_msgs[:]
         self.prev_out_msgs = prev_out_msg
 

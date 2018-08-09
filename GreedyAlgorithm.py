@@ -14,17 +14,15 @@ class Greedy(object):
         self.M = dis_matrix.shape[0]
         self.N = dis_matrix.shape[1]
 
-
-
-
-    """
+    def objFunction(self, S):
+        """
         This function calculates the objective function value for the current number of slected representatives.
 
         :param S: current set of representatives.
 
         :returns: objective function value.
         """
-    def objFunction(self, S):
+
         lS = S
         ldis_matrix = self.dis_matrix
         tempdis = -ldis_matrix[lS, :]
@@ -33,17 +31,15 @@ class Greedy(object):
 
         return value
 
-
-
-
-    """
+    def deterministic(self):
+        """
         This function runs deterministic greedy algorithm to find the representatives of the data.
 
         :param : None.
 
         :returns: representative set and objective function value.
         """
-    def deterministic(self):
+
         X = []
         Y= np.arange(self.M)
         num = np.arange(self.M)
@@ -79,17 +75,15 @@ class Greedy(object):
 
         return X, obj_func_value
 
-
-
-
-    """
+    def randomized(self):
+        """
         This function runs randomized greedy algorithm to find the representatives of the data.
 
         :param : None.
 
         :returns: representative set and objective function value.
         """
-    def randomized(self):
+
         X = []
         Y = np.arange(self.M)
         num = np.arange(self.M)

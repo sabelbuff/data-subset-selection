@@ -24,10 +24,8 @@ class DS3(object):
         self.dis_matrix = dis_matrix
         self.N = len(self.dis_matrix)
 
-
-
-
-    """
+    def regCost(self, z, p):
+        """
         This function calculates the total cost of choosing the as few representatives as possible.
 
         :param z: matrix whose non-zero rows corresponds to the representatives of the dataset.
@@ -35,7 +33,7 @@ class DS3(object):
 
         :returns: regularization cost.
         """
-    def regCost(self, z, p):
+
         cost = 0
         for i in range(len(self.dis_matrix)):
             norm = LA.norm(z[i], ord=p)
@@ -43,17 +41,15 @@ class DS3(object):
 
         return cost * self.reg
 
-
-
-
-    """
-       This function calculates the total cost of encoding using all the representatives.
-
-       :param z: matrix whose non-zero rows corresponds to the representatives of the dataset.
-
-       :returns: encoding cost.
-       """
     def encodingCost(self, z):
+        """
+        This function calculates the total cost of encoding using all the representatives.
+
+        :param z: matrix whose non-zero rows corresponds to the representatives of the dataset.
+
+        :returns: encoding cost.
+        """
+
         cost = 0
         for j in range(len(self.dis_matrix)):
             for i in range(len(self.dis_matrix)):
@@ -61,10 +57,8 @@ class DS3(object):
 
         return cost
 
-
-
-
-    """
+    def transitionCost(self, z, M, m0):
+        """
         This function calculates the total cost of transitions between the representatives.
 
         :param z:  matrix whose non-zero rows corresponds to the representatives of the dataset.
@@ -73,7 +67,7 @@ class DS3(object):
 
         :returns: transition cost.
         """
-    def transitionCost(self, z, M, m0):
+
         sum1 = 0
         for i in range(1, self.N):
             sum1 += np.matmul(np.matmul(np.transpose(z[:,(i-1)]), M), z[:, i])
@@ -81,14 +75,12 @@ class DS3(object):
 
         return sum1 + sum2
 
-
-
-
-    """
-        This function finds the subset of data that can represent it as closely as possible given the 
-        regularization parameter. It uses message passing algorithm to solve the objective function for this problem, 
+    def messagePassing(self, damp, max_iter):
+        """
+        This function finds the subset of data that can represent it as closely as possible given the
+        regularization parameter. It uses message passing algorithm to solve the objective function for this problem,
         which is same as popular 'facility location problem'.
-        
+
         To know more about this, please read :
         Solving the Uncapacitated Facility Location Problem Using Message Passing Algorithms
         by Nevena Lazic, Brendan J. Frey, Parham Aarabi
@@ -98,9 +90,9 @@ class DS3(object):
         :param damp:      message damp value to be used. This helps in faster convergence of the algorithm.
         :param max_iter:  maximum number of iterations to run this algorithm.
 
-        :returns: representative of the data, total number of representatives, and the objective function value. 
+        :returns: representative of the data, total number of representatives, and the objective function value.
         """
-    def messagePassing(self, damp, max_iter):
+
         M = self.dis_matrix.shape[0]
         N = self.dis_matrix.shape[1]
 
@@ -160,15 +152,13 @@ class DS3(object):
 
         return data_rep, len(data_rep), obj_func_value
 
-
-
-
-    """
-        This function finds the subset of the data that can represent it as closely as possible given the 
-        regularization parameter and the underlying transition probabilities between the states. It uses 
-        message passing algorithm to solve the objective function for this problem, which is an extension for 
+    def messagePassingSeq(self, damp, trans_matrix, init_prob_matrix, max_iter):
+        """
+        This function finds the subset of the data that can represent it as closely as possible given the
+        regularization parameter and the underlying transition probabilities between the states. It uses
+        message passing algorithm to solve the objective function for this problem, which is an extension for
         the popular 'facility location problem' and is called 'sequential facility location problem.
-        
+
         To know more about this, please read :
         Subset Selection and Summarization in Sequential Data
         by Ehsan Elhamifar, M. Clara De Paolis Kaluza
@@ -179,9 +169,9 @@ class DS3(object):
         :param init_prob_matrix:  initial probability vector of the states in the source set.
         :param max_iter:          maximum number of iterations to run this algorithm.
 
-        :returns: representative of the data, total number of representatives, and the objective function value. 
+        :returns: representative of the data, total number of representatives, and the objective function value.
         """
-    def messagePassingSeq(self, damp, trans_matrix, init_prob_matrix, max_iter):
+
         M = self.dis_matrix.shape[0]
         T = self.dis_matrix.shape[1]
 
@@ -247,14 +237,12 @@ class DS3(object):
 
         return data_rep, len(data_rep), obj_func_value
 
-
-
-
-    """
-        This function finds the subset of the data that can represent it as closely as possible given the 
-        regularization parameter. It uses deterministic greedy algorithm on the sub-modular set of data to 
+    def greedyDeterministic(self):
+        """
+        This function finds the subset of the data that can represent it as closely as possible given the
+        regularization parameter. It uses deterministic greedy algorithm on the sub-modular set of data to
         solve the objective which closely resembles the popular 'facility location problem'.
-        
+
         To know more about this, please read :
         A TIGHT LINEAR TIME (1/2)-APPROXIMATION FOR UNCONSTRAINED SUBMODULAR MAXIMIZATION
         by NIV BUCHBINDER, MORAN FELDMAN, JOSEPH (SEFFI) NAOR, AND ROY SCHWARTZ
@@ -262,9 +250,9 @@ class DS3(object):
 
         :param : None
 
-        :returns: representative of the data, total number of representatives, and the objective function value. 
+        :returns: representative of the data, total number of representatives, and the objective function value.
         """
-    def greedyDeterministic(self):
+
         # initialize the Greedy class.
         G = Greedy(self.dis_matrix, self.reg)
 
@@ -273,14 +261,12 @@ class DS3(object):
 
         return rep_matrix, len(rep_matrix), obj_func_value
 
-
-
-
-    """
-        This function finds the subset of the data that can represent it as closely as possible given the 
-        regularization parameter. It uses randomized greedy algorithm on the sub-modular set of data to 
+    def greedyRandomized(self):
+        """
+        This function finds the subset of the data that can represent it as closely as possible given the
+        regularization parameter. It uses randomized greedy algorithm on the sub-modular set of data to
         solve the objective which closely resembles the popular 'facility location problem'.
-        
+
         To know more about this, please read :
         A TIGHT LINEAR TIME (1/2)-APPROXIMATION FOR UNCONSTRAINED SUBMODULAR MAXIMIZATION
         by NIV BUCHBINDER, MORAN FELDMAN, JOSEPH (SEFFI) NAOR, AND ROY SCHWARTZ
@@ -288,9 +274,9 @@ class DS3(object):
 
         :param : None
 
-        :returns: representative of the data, total number of representatives, and the objective function value. 
+        :returns: representative of the data, total number of representatives, and the objective function value.
         """
-    def greedyRandomized(self):
+
         # initialize the Greedy class.
         G = Greedy(self.dis_matrix, self.reg)
 
@@ -299,12 +285,10 @@ class DS3(object):
 
         return rep_matrix, len(rep_matrix), obj_func_value
 
-
-
-
-    """
-        This function finds the subset of the data that can represent it as closely as possible given the 
-        regularization parameter. It uses 'alternating direction methods of multipliers' (ADMM) algorithm to 
+    def ADMM(self, mu, epsilon, max_iter, p):
+        """
+        This function finds the subset of the data that can represent it as closely as possible given the
+        regularization parameter. It uses 'alternating direction methods of multipliers' (ADMM) algorithm to
         solve the objective function for this problem, which is similar to the popular 'facility location problem'.
 
         To know more about this, please read :
@@ -317,9 +301,9 @@ class DS3(object):
         :param max_iter:  maximum number of iterations to run this algorithm.
         :param p:         norm to be used.
 
-        :returns: representative of the data, total number of representatives, and the objective function value. 
+        :returns: representative of the data, total number of representatives, and the objective function value.
         """
-    def ADMM(self, mu, epsilon, max_iter, p):
+
         # initialize the ADMM class.
         G = ADMM(mu, epsilon, max_iter, self.reg)
 
