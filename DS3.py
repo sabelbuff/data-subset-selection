@@ -35,7 +35,6 @@ class DS3(object):
 
         :returns: regularization cost.
         """
-
     def regCost(self, z, p):
         cost = 0
         for i in range(len(self.dis_matrix)):
@@ -54,10 +53,6 @@ class DS3(object):
 
        :returns: encoding cost.
        """
-
-
-
-
     def encodingCost(self, z):
         cost = 0
         for j in range(len(self.dis_matrix)):
@@ -78,10 +73,6 @@ class DS3(object):
 
         :returns: transition cost.
         """
-
-
-
-
     def transitionCost(self, z, M, m0):
         sum1 = 0
         for i in range(1, self.N):
@@ -109,7 +100,6 @@ class DS3(object):
 
         :returns: representative of the data, total number of representatives, and the objective function value. 
         """
-
     def messagePassing(self, damp, max_iter):
         M = self.dis_matrix.shape[0]
         N = self.dis_matrix.shape[1]
@@ -191,7 +181,6 @@ class DS3(object):
 
         :returns: representative of the data, total number of representatives, and the objective function value. 
         """
-
     def messagePassingSeq(self, damp, trans_matrix, init_prob_matrix, max_iter):
         M = self.dis_matrix.shape[0]
         T = self.dis_matrix.shape[1]
@@ -275,7 +264,6 @@ class DS3(object):
 
         :returns: representative of the data, total number of representatives, and the objective function value. 
         """
-
     def greedyDeterministic(self):
         # initialize the Greedy class.
         G = Greedy(self.dis_matrix, self.reg)
@@ -302,7 +290,6 @@ class DS3(object):
 
         :returns: representative of the data, total number of representatives, and the objective function value. 
         """
-
     def greedyRandomized(self):
         # initialize the Greedy class.
         G = Greedy(self.dis_matrix, self.reg)

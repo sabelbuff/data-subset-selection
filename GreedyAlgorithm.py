@@ -79,6 +79,9 @@ class Greedy(object):
 
         return X, obj_func_value
 
+
+
+
     """
         This function runs randomized greedy algorithm to find the representatives of the data.
 

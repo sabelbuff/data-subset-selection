@@ -115,13 +115,13 @@ class MessageGraphSeq(object):
 
 
     """
-            This function calculates the belief of each variable by adding all te incoming messages from the
-            factors its connected to.
+        This function calculates the belief of each variable by adding all te incoming messages from the
+        factors its connected to.
 
-            :param var: variable node.
+        :param var: variable node.
 
-            :returns: variable node.
-            """
+        :returns: variable node.
+        """
     def belief(self, var):
         belief = 0
         for i in range(len(var.in_msgs)):
@@ -133,13 +133,13 @@ class MessageGraphSeq(object):
 
 
     """
-            This function sets the value of each element of representative matrix to either 0 or 1, based on the value of
-            belief(1, if +ve, else 0) of the corresponding variable in the factor graph.
+        This function sets the value of each element of representative matrix to either 0 or 1, based on the value of
+        belief(1, if +ve, else 0) of the corresponding variable in the factor graph.
 
-            :param: None.
+        :param: None.
 
-            :returns
-            """
+        :returns
+        """
     def setVarValue(self):
         for v in self.variables:
             for v1 in v:
