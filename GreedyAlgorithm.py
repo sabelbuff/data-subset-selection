@@ -3,72 +3,124 @@ from random import shuffle
 
 
 class Greedy(object):
+
+    """
+        :param dis_matrix:  dis-similarity matrix.
+        :param reg:         regularization parameter.
+        """
     def __init__(self, dis_matrix, reg):
         self.dis_matrix = np.matrix(dis_matrix)
         self.reg = reg
-        self.N = len(self.dis_matrix)
+        self.M = dis_matrix.shape[0]
+        self.N = dis_matrix.shape[1]
 
-    def evaluatingFunction(self, S):
+
+
+
+    """
+        This function calculates the objective function value for the current number of slected representatives.
+
+        :param S: current set of representatives.
+
+        :returns: objective function value.
+        """
+    def objFunction(self, S):
         lS = S
         ldis_matrix = self.dis_matrix
-        tempdis = -ldis_matrix[:, lS]
-        # print(tempdis)
-        value = np.sum(np.max(tempdis, axis=1))
+        tempdis = -ldis_matrix[lS, :]
+        value = np.sum(np.max(tempdis, axis=0))
         value -= self.reg * len(lS)
-        # print(value)
+
         return value
 
+
+
+
+    """
+        This function runs deterministic greedy algorithm to find the representatives of the data.
+
+        :param : None.
+
+        :returns: representative set and objective function value.
+        """
     def deterministic(self):
         X = []
-        Y= np.arange(self.N)
-        num = np.arange(self.N)
-        # shuffle(num)
+        Y= np.arange(self.M)
+        num = np.arange(self.M)
+        shuffle(num)
         print("Deterministic algorithm running....")
         for i in num:
             print("itreation : ", i+1)
-            print(X)
-            newX = X + [i]
-            newY = [j for j in Y if j != i]
-            if len(X) == 0:
-                a = -self.evaluatingFunction(newX)
-            else:
-                a = self.evaluatingFunction(newX) - self.evaluatingFunction(X)
-            b = self.evaluatingFunction(newY) - self.evaluatingFunction(Y)
 
+            # add new data point to the initially empty set X.
+            newX = X + [i]
+
+            # remove same data point as above from set of initially all data points.
+            newY = [j for j in Y if j != i]
+
+            # function value for empty set, initial condition.
+            # calculate the cost of adding the random data point to X, as 'a'.
+            # calculate the cost of removing the random data point from Y, as 'b'.
+            if len(X) == 0:
+                a = -self.objFunction(newX)
+            else:
+                a = self.objFunction(newX) - self.objFunction(X)
+            b = self.objFunction(newY) - self.objFunction(Y)
+
+            # add datapoint to X, if cost of adding more, else remove from Y.
             if a >= b:
                 X = newX
 
             else:
                 Y = newY
 
-        function_value = self.evaluatingFunction(X)
-        print(X)
-        return X, function_value
+        # calculate the final objective function value.
+        obj_func_value = self.objFunction(X)
 
+        return X, obj_func_value
+
+    """
+        This function runs randomized greedy algorithm to find the representatives of the data.
+
+        :param : None.
+
+        :returns: representative set and objective function value.
+        """
     def randomized(self):
         X = []
-        Y = np.arange(self.N)
-        num = np.arange(self.N)
+        Y = np.arange(self.M)
+        num = np.arange(self.M)
         shuffle(num)
         print("Randomized algorithm running....")
         for i in num:
             print("itreation : ", i + 1)
-            newX = X + [i]
-            newY = [j for j in Y if j != i]
-            if len(X) == 0:
-                a = -self.evaluatingFunction(newX)
-            else:
-                a = self.evaluatingFunction(newX) - self.evaluatingFunction(X)
-            b = self.evaluatingFunction(newY) - self.evaluatingFunction(Y)
 
+            # add new data point to the initially empty set X.
+            newX = X + [i]
+
+            # remove same data point as above from set of initially all data points.
+            newY = [j for j in Y if j != i]
+
+            # function value for empty set, initial condition.
+            # calculate the cost of adding the random data point to X, as 'a'.
+            # calculate the cost of removing the random data point from Y, as 'b'.
+            if len(X) == 0:
+                a = -self.objFunction(newX)
+            else:
+                a = self.objFunction(newX) - self.objFunction(X)
+            b = self.objFunction(newY) - self.objFunction(Y)
+
+            # take only positive a, b values
             a_dash = max(0, a)
             b_dash = max(0, b)
 
             values = [1, 0]
 
+            # add the datapoint to x, if both a, b are 0.
             if a_dash == 0 and b_dash == 0:
                 X = newX
 
+            # else, add to X or Y, based on the probability of a, b out of total.
             else:
                 a_prob = a_dash / (a_dash + b_dash)
                 b_prob = 1 - a_prob
@@ -78,6 +130,7 @@ class Greedy(object):
                 else:
                     Y = newY
 
-        function_value = self.evaluatingFunction(X)
+        # calculate the final objective funtion value.
+        obj_func_value = self.objFunction(X)
 
-        return X, function_value
+        return X, obj_func_value
