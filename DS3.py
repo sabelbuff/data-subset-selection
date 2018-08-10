@@ -141,7 +141,7 @@ class DS3(object):
         # find the index and total count of the representatives, given the representative matrix.
         data_rep = []
         count = 0
-        print(z_matrix)
+
         for i in range(M):
             flag = 0
             for j in range(N):
