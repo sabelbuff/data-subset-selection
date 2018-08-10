@@ -163,35 +163,36 @@ class Factor(Node):
             sigma = self.dismatrix[self.neighbors[0].i_index, self.neighbors[0].j_index]
             self.out_msgs[0] = (self.damp * self.prev_out_msgs[0]) + ((1 - self.damp) * -sigma)
 
-        # updates message for the 'IC' type factor node.
-        # updates message from a factor node to all variable nodes in a row connected to it.
-        elif self.nodetype == 'IC':
-            i = self.neighbors[0].i_index
-
-            # take sum of all messages coming to this node.
-            eta = [self.neighbors[k].in_msgs[2] - self.dismatrix[i, k] for k in range(len(self.neighbors))]
-
-            # to calculate eta, use sum of all messages coming to this node, but not from the node to which outgoing
-            # message is to be calculated.
-            for j in range(len(self.neighbors)):
-                temp_eta = eta[:]
-                del temp_eta[j]
-                self.out_msgs[j] = (self.damp * self.prev_out_msgs[j]) + ((1 - self.damp) * -max(temp_eta))
-
         # updates message for the 'JF' type factor node.
-        # updates message from a factor node to all variable nodes in a column connected to it.
-        else:
+        # updates message from a factor node to all variable nodes in a row connected to it.
+        elif self.nodetype == 'JF':
             j = self.neighbors[0].j_index
 
             # take sum of all messages coming to this node.
-            dis_eta = [self.neighbors[k].in_msgs[1] - self.dismatrix[k, j] for k in range(len(self.neighbors))]
+            eta = [self.neighbors[k].in_msgs[1] - self.dismatrix[k, j] for k in range(len(self.neighbors))]
+
+            # to calculate eta, use sum of all messages coming to this node, but not from the node to which outgoing
+            # message is to be calculated.
+            for i in range(len(self.neighbors)):
+                temp_eta = eta[:]
+                del temp_eta[i]
+                self.out_msgs[i] = (self.damp * self.prev_out_msgs[i]) + ((1 - self.damp) * -max(temp_eta))
+
+        # updates message for the 'IC' type factor node.
+        # updates message from a factor node to all variable nodes in a column connected to it.
+        else:
+            i = self.neighbors[0].i_index
+
+            # take sum of all messages coming to this node.
+            dis_eta = [self.neighbors[k].in_msgs[2] - self.dismatrix[i, k] for k in range(len(self.neighbors))]
             dis_eta = np.array(dis_eta)
 
             # to calculate alpha, use sum of all messages coming to this node, but not from the node to which outgoing
             # message is to be calculated.
-            for i in range(len(self.neighbors)):
+            for j in range(len(self.neighbors)):
                 temp_dis_eta = dis_eta[:]
-                np.delete(temp_dis_eta, i, 0)
+                np.delete(temp_dis_eta, j, 0)
                 sum_value = np.sum(np.maximum(temp_dis_eta, 0))
                 alpha = np.minimum(0, (-self.reg + sum_value))
-                self.out_msgs[i] = (self.damp * self.prev_out_msgs[i]) + ((1 - self.damp) * alpha)
+                self.out_msgs[j] = (self.damp * self.prev_out_msgs[j]) + ((1 - self.damp) * alpha)
+
